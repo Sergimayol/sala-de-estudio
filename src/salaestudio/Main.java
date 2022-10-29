@@ -10,7 +10,7 @@ import java.util.concurrent.Semaphore;
  *
  * @author Sergi
  */
-public class Main  implements Runnable{
+public class Main implements Runnable {
 
     private static final int MAX = 15;
     private static final int director = 1;
