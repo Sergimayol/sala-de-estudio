@@ -28,3 +28,4 @@ replay_pid*
 
 # Vscode config files
 .vscode/
+/build/
