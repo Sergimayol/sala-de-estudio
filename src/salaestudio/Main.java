@@ -1,74 +1,66 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package salaestudio;
 
+import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 /**
  *
  * @author Sergi
  */
-public class Main implements Runnable {
+public class Main {
 
-    private static final int MAX = 15;
-    private static final int director = 1;
-    private static final int estudiantes = 5;
-    private static final int MAX_COUNT = 1000;
-    int id;
-    static volatile int counter;
-    static Semaphore mutex = new Semaphore(1);
-    int ronda = 1;
-
-    public Main(int id) {
-        this.id = id;
-    }
+    private static int numEstudiantes = 0;
+    private static int maxEstudiantes = 0;
 
     /**
      * @param args the command line arguments
-     * @throws java.lang.InterruptedException
      */
-    public static void main(String[] args) throws InterruptedException {
-        System.out.println("SIMULACIÓN DE LA SALA DE ESTUDIO");
-        System.out.println("Número total de estudiantes: " + estudiantes);
-        System.out.println("Número máximo de estudiantes: " + MAX);
-        //Inicializamos los Threads
-        Thread[] threads = new Thread[estudiantes];
-        int i;
-        for (i = 0; i < estudiantes; i++) {
-            threads[i] = new Thread(new Main(i));
-            threads[i].start();
-        }
-        //Los estudiantes entran a la sala
-        for (i = 0; i < estudiantes; i++) {
-            threads[i].join();
-        }
+    public static void main(String[] args) {
+        // Mensaje inicial de la simulación
+        mensaje_inicio();
+        // Inicio de la simulación
+        inicio_simulacion();
     }
 
-    @Override
-    public void run() {
-        int max = MAX_COUNT / estudiantes;
-        System.out.printf("Estudiante %d\n", id);
-        for (int i = 0; i < max; i++) {
+    /*
+     * Inicio de la simulación.
+     */
+    private static void inicio_simulacion() {
+        Thread[] hilos = new Thread[numEstudiantes];
+        int i = 0;
+        for (i = 0; i < numEstudiantes; i++) {
+            String nombre = NombresEstudiantes.getNombre(i);
+            hilos[i] = new Thread(new Estudiante(nombre));
+            hilos[i].start();
+        }
+        for (i = 0; i < numEstudiantes; i++) {
             try {
-                mutex.acquire();
-            } catch (InterruptedException e) {
+                hilos[i].join();
+            } catch (InterruptedException ex) {
+                System.out.println("Error al esperar a los hilos");
             }
-            counter += 1;
-            mutex.release();
-
         }
 
+        System.out.println("Fin de la simulación");
     }
 
-    //Método director, probablemente haya que hacer una clase 
-    public void director() {
-        System.out.println("El Sr. Director empieza la ronda");
-        System.out.println("El director acaba la ronda " + ronda + " de 3");
-        ronda++;
-        if (ronda == 3) {
+    /*
+     * Método que muestra el mensaje de inicio de la simulación y pide el número
+     * total de estudiantes y el máximo de estudiantes que pueden estar en la sala a
+     * la vez.
+     * 
+     * @return void
+     */
+    private static void mensaje_inicio() {
+        Scanner sc = new Scanner(System.in);
 
-        }
+        System.out.println("SIMULACIÓN DE SALA DE ESTUDIO");
+        System.out.print("Número de total estudiantes: ");
+        numEstudiantes = sc.nextInt();
+        System.out.print("\nNúmero máximo de estudiantes: ");
+        maxEstudiantes = sc.nextInt();
+        System.out.print("\n");
+
+        sc.close();
     }
 }
