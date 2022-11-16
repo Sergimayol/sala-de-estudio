@@ -1,7 +1,8 @@
 package salaestudio;
 
 import java.util.Scanner;
-import java.util.concurrent.Semaphore;
+
+import utils.NombresEstudiantes;
 
 /**
  *
@@ -22,18 +23,25 @@ public class Main {
         inicio_simulacion();
     }
 
-    /*
+    /**
      * Inicio de la simulación.
      */
     private static void inicio_simulacion() {
-        Thread[] hilos = new Thread[numEstudiantes];
+        SalaEstudio sala = new SalaEstudio(1, maxEstudiantes);
+        
+        sala.setMensaje("Sala de estudio abierta");
+
+        Thread[] hilos = new Thread[numEstudiantes + 1];
         int i = 0;
         for (i = 0; i < numEstudiantes; i++) {
             String nombre = NombresEstudiantes.getNombre(i);
-            hilos[i] = new Thread(new Estudiante(nombre));
+            hilos[i] = new Thread(new Estudiante(nombre, sala));
             hilos[i].start();
         }
-        for (i = 0; i < numEstudiantes; i++) {
+        hilos[i] = new Thread(new Director(sala));
+        hilos[i].start();
+
+        for (i = 0; i < numEstudiantes + 1; i++) {
             try {
                 hilos[i].join();
             } catch (InterruptedException ex) {
@@ -44,7 +52,7 @@ public class Main {
         System.out.println("Fin de la simulación");
     }
 
-    /*
+    /**
      * Método que muestra el mensaje de inicio de la simulación y pide el número
      * total de estudiantes y el máximo de estudiantes que pueden estar en la sala a
      * la vez.
