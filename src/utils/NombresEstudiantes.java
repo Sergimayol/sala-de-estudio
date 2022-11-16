@@ -1,4 +1,4 @@
-package salaestudio;
+package utils;
 
 public class NombresEstudiantes {
     // Create a list with some names that are not repeated
