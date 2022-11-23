@@ -7,12 +7,47 @@ public class SalaEstudio {
     private Semaphore semaforo;
     private int numDirector;
     private int numEstudiantes;
+    private final int MAX_ESTUDIANTES;
     private String mensaje = "";
 
     public SalaEstudio(int numDirector, int numEstudiantes) {
         this.numDirector = numDirector;
-        this.numEstudiantes = numEstudiantes;
+        this.numEstudiantes = 0;
         this.semaforo = new Semaphore(numDirector + numEstudiantes);
+        this.MAX_ESTUDIANTES = numEstudiantes;
+    }
+
+    public void entrarDirector() {
+        try {
+            semaforo.acquire(numDirector);
+        } catch (InterruptedException ex) {
+            System.out.println("Error al entrar el director");
+        }
+    }
+
+    public void salirDirector() {
+        semaforo.release(numDirector);
+    }
+
+    public void entrarEstudiante(String id) {
+        try {
+            this.numEstudiantes++;
+            System.out.println(
+                    id + "entra a la sala d'estudi, nombre estudiants: " + numEstudiantes + "\n" + id + " estudia");
+            semaforo.acquire();
+        } catch (InterruptedException ex) {
+            System.out.println("Error al entrar el estudiante");
+        }
+    }
+
+    public void salirEstudiante(String id) {
+        this.numEstudiantes--;
+        System.out.println(id + " surt de la sala d'estudi, nombre estudiants: " + numEstudiantes);
+        semaforo.release();
+    }
+
+    public int getMAX_ESTUDIANTES() {
+        return MAX_ESTUDIANTES;
     }
 
     public int getNumDirector() {
@@ -59,6 +94,18 @@ public class SalaEstudio {
         semaforo.release();
         mensaje = id + " sale de la sala";
         System.out.println(mensaje);
+    }
+
+    public void block() {
+        try {
+            this.semaforo.acquire();
+        } catch (InterruptedException ex) {
+            System.out.println("Error al bloquear el semáforo");
+        }
+    }
+
+    public void unblock() {
+        this.semaforo.release();
     }
 
     public void setMensaje(String mensaje) {
