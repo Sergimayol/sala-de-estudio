@@ -28,10 +28,8 @@ public class Main {
      */
     private static void inicio_simulacion() {
         SalaEstudio sala = new SalaEstudio(1, maxEstudiantes);
-
-        sala.setMensaje("Sala de estudio abierta");
-
         Thread[] hilos = new Thread[numEstudiantes + 1];
+
         int i = 0;
         hilos[i] = new Thread(new Director(sala));
         hilos[i].start();
@@ -49,7 +47,7 @@ public class Main {
             }
         }
 
-        System.out.println("Fin de la simulación");
+        System.out.println("SIMULACIÓ ACABADA");
     }
 
     /**

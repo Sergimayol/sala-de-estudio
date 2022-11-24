@@ -22,29 +22,42 @@ public class Director implements Runnable {
     public void run() {
         // El director realiza 3 rondas
         while (ronda <= NUM_RONDAS) {
-            sala.setMensaje("\tEl Sr. Director comença la ronda");
+            this.esperarTiempoAleatorio();
+            System.out.println("\tEl Sr. Director comença la ronda");
             // Si no hay nadie en la sala, la ronda se acaba
             if (sala.getNumEstudiantes() == 0) {
-                sala.setMensaje("\tEl Director veu que no hi ha ningú a la sala d'estudis");
+                System.out.println("\tEl Director veu que no hi ha ningú a la sala d'estudis");
             } else {
                 // Si el número de estudiantes en la sala es menor que el máximo
                 // el director se queda esperando
                 if (sala.getNumEstudiantes() < sala.getMAX_ESTUDIANTES()) {
-                    sala.setMensaje("\tEl Director està esperant per entrar. No molesta als que estudien");
+                    System.out.println("\tEl Director està esperant per entrar. No molesta als que estudien");
                     estadoDirector = Estado.ESPERANDO;
                     // block director thread with a semaphore
                     sala.entrarDirector();
                 } else {
+                    // Bloquear la sala de estudio
+                    sala.blockSalaEstudio();
                     // Si el número de estudiantes en la sala es igual al máximo
                     // el director entra en la sala
-                    sala.setMensaje("\tEl Director està dins la sala d'estudi: S'HA ACABAT LA FESTA!");
+                    System.out.println("\tEl Director està dins la sala d'estudi: S'HA ACABAT LA FESTA!");
                     estadoDirector = Estado.DENTRO;
                     // El director espera hasta que todos los estudiantes salgan de la sala
                     sala.entrarDirector();
+                    // Desbloquear la sala de estudio cuando todos los estudiantes hayan salido
+                    sala.unblockSalaEstudio();
                 }
             }
-            sala.setMensaje("\tEl Director acaba la ronda " + ronda + " de " + NUM_RONDAS);
+            System.out.println("\tEl Director acaba la ronda " + ronda + " de " + NUM_RONDAS);
             ronda++;
+        }
+    }
+
+    private void esperarTiempoAleatorio() {
+        try {
+            Thread.sleep((long) (Math.random() * 1000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

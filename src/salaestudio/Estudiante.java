@@ -16,8 +16,43 @@ public class Estudiante implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Hola, soy " + this.id);
-        System.out.println(sala.getMensaje());
+        // Si la sala esta bloqueada, el estudiante espera
+
+        // Espera un tiempo aleatorio
+        this.esperarTiempoAleatorio();
+
+        // Sino entra en la sala
+        sala.entrarEstudiante(this.id);
+
+        // Si el número de estudiantes en la sala es menor que el máximo el estudiante
+        // estudia
+        if (sala.getNumEstudiantes() > sala.getMAX_ESTUDIANTES()) {
+            System.out.println(id + ": FESTA!!!!!");
+            // Desbloquear al director
+            sala.salirDirector();
+        } else {
+            // Sino el estudiante hace fiesta
+            System.out.println(id + " estudia");
+        }
+
+        // Espera un tiempo aleatorio
+        this.esperarTiempoAleatorio();
+
+        // Sale de la sala
+        sala.salirEstudiante(this.id);
+
+        if (sala.getNumEstudiantes() == 0) {
+            System.out.println(this.id + ": ADEU Senyor Director es queda sol");
+            sala.salirDirector();
+        }
+    }
+
+    private void esperarTiempoAleatorio() {
+        try {
+            Thread.sleep((long) (Math.random() * 1000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }
