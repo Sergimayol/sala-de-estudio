@@ -31,7 +31,9 @@ public class Main {
         Thread[] hilos = new Thread[numEstudiantes + 1];
 
         int i = 0;
-        hilos[i] = new Thread(new Director(sala));
+        Director director = new Director(sala);
+        hilos[i] = new Thread(director);
+        sala.setDirector(director);
         hilos[i].start();
         for (i = 1; i < numEstudiantes + 1; i++) {
             String nombre = NombresEstudiantes.getNombre(i - 1);

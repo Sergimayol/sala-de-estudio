@@ -2,6 +2,8 @@ package salaestudio;
 
 import java.util.concurrent.Semaphore;
 
+import salaestudio.Director.Estado;
+
 public class SalaEstudio {
 
     private Semaphore semaforoSalaEstudio;
@@ -10,6 +12,7 @@ public class SalaEstudio {
     private int numEstudiantes;
     private final int MAX_ESTUDIANTES;
     private String mensaje = "";
+    private Director estadoDirector;
 
     public SalaEstudio(int numDirector, int numEstudiantes) {
         this.numDirector = numDirector;
@@ -17,6 +20,14 @@ public class SalaEstudio {
         this.semaforoSalaEstudio = new Semaphore(1);
         this.semaforoDirector = new Semaphore(0);
         this.MAX_ESTUDIANTES = numEstudiantes;
+    }
+
+    public void setDirector(Director director) {
+        this.estadoDirector = director;
+    }
+
+    public Estado getEstadoDirector() {
+        return this.estadoDirector.getEstadoDirector();
     }
 
     public void entrarDirector() {

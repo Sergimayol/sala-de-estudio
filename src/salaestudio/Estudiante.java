@@ -1,5 +1,7 @@
 package salaestudio;
 
+import salaestudio.Director.Estado;
+
 public class Estudiante implements Runnable {
 
     private final String id;
@@ -17,6 +19,9 @@ public class Estudiante implements Runnable {
     @Override
     public void run() {
         // Si la sala esta bloqueada, el estudiante espera
+        if (this.sala.getEstadoDirector() == Estado.DENTRO) {
+            this.sala.blockSalaEstudio();
+        }
 
         // Espera un tiempo aleatorio
         this.esperarTiempoAleatorio();

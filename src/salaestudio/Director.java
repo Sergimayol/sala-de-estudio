@@ -7,7 +7,7 @@ public class Director implements Runnable {
     private Estado estadoDirector;
     private final int NUM_RONDAS = 3;
 
-    private enum Estado {
+    public enum Estado {
         FUERA,
         ESPERANDO,
         DENTRO
