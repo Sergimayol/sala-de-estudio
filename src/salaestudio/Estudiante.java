@@ -33,8 +33,10 @@ public class Estudiante implements Runnable {
         // estudia
         if (sala.getNumEstudiantes() > sala.getMAX_ESTUDIANTES()) {
             System.out.println(id + ": FESTA!!!!!");
-            // Desbloquear al director
-            sala.salirDirector();
+            if (this.sala.getEstadoDirector() != Estado.DENTRO) {
+                // Desbloquear al director
+                sala.salirDirector();
+            }
         } else {
             // Sino el estudiante hace fiesta
             System.out.println(id + " estudia");
