@@ -1,6 +1,7 @@
 package salaestudio;
 
 import java.util.Scanner;
+import java.util.concurrent.Semaphore;
 
 import utils.NombresEstudiantes;
 
@@ -10,8 +11,13 @@ import utils.NombresEstudiantes;
  */
 public class Main {
 
-    private static int numEstudiantes = 0;
-    private static int maxEstudiantes = 0;
+    static int numEstudiantes = 0;
+    static int maxEstudiantes = 0;
+    static int numDirectores = 1;
+    static int contNumEstudiantes = 0;
+    static Semaphore mutex = new Semaphore(1);
+    static Semaphore semEstudiantes;
+    static Semaphore semDirectores;
 
     /**
      * @param args the command line arguments
@@ -19,6 +25,9 @@ public class Main {
     public static void main(String[] args) {
         // Mensaje inicial de la simulación
         mensaje_inicio();
+        // Asignación de los semáforos
+        semEstudiantes = new Semaphore(maxEstudiantes);
+        semDirectores = new Semaphore(numDirectores);
         // Inicio de la simulación
         inicio_simulacion();
     }
@@ -27,17 +36,14 @@ public class Main {
      * Inicio de la simulación.
      */
     private static void inicio_simulacion() {
-        SalaEstudio sala = new SalaEstudio(1, maxEstudiantes);
         Thread[] hilos = new Thread[numEstudiantes + 1];
 
         int i = 0;
-        Director director = new Director(sala);
-        hilos[i] = new Thread(director);
-        sala.setDirector(director);
+        hilos[i] = new Thread(new Director());
         hilos[i].start();
         for (i = 1; i < numEstudiantes + 1; i++) {
             String nombre = NombresEstudiantes.getNombre(i - 1);
-            hilos[i] = new Thread(new Estudiante(nombre, sala));
+            hilos[i] = new Thread(new Estudiante(nombre));
             hilos[i].start();
         }
 
@@ -71,4 +77,12 @@ public class Main {
 
         sc.close();
     }
+
+    public static int getcontNumEstudiantes() throws InterruptedException {
+        mutex.acquire();
+        int cont = contNumEstudiantes;
+        mutex.release();
+        return cont;
+    }
+
 }
