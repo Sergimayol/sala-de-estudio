@@ -5,13 +5,14 @@ public class Main {
 
     private static final int TIEMPO_DE_ESPERA = 1000;
     private static final int numDirectores = 1;
-    private static final Semaphore mutex = new Semaphore(1);
+    private static final Semaphore semaforoDirector = new Semaphore(numDirectores);
+    private static final Semaphore mutexNumEstudiantesEsCero = new Semaphore(1);
+    private static final Semaphore mutexNumEstudiantesEsMayorAMax = new Semaphore(0);
+    private static final Semaphore mutexContador = new Semaphore(1);
     private static int contadorEstudiantes = 0;
     private static int numEstudiantes = 0;
     private static int numMaxEstudiantesEnSalaEstudio;
     private static int numThreads;
-    private static Semaphore semaforoDirector;
-    private static Semaphore semaforoEstudiantes;
 
     public static void main(String[] args) {
         // Mensaje inicial de la simulación
@@ -25,9 +26,6 @@ public class Main {
     }
 
     private static void inicio_simulacion() throws InterruptedException {
-        semaforoEstudiantes = new Semaphore(numMaxEstudiantesEnSalaEstudio);
-        semaforoDirector = new Semaphore(numDirectores);
-
         Thread[] threads = new Thread[numThreads];
         int i = 0;
 
@@ -76,46 +74,82 @@ public class Main {
         sc.close();
     }
 
-    private static void bloquearMutex() {
+    private static void bloquearContadorEstudiantes() {
         try {
-            mutex.acquire();
+            mutexContador.acquire();
         } catch (InterruptedException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
-    private static void desbloquearMutex() {
-        mutex.release();
+    private static void desbloquearContadorEstudiantes() {
+        mutexContador.release();
+    }
+
+
+    private static void contadorEstudiantesEsCero() {
+        try {
+            desbloquearDirector(0);
+            mutexNumEstudiantesEsCero.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void contadorEstudiantesNoEsCero() {
+        if (Director.estadoDirector != EstadoDirector.ESPERANDO) {
+            bloquearDirector();
+        }
+        mutexNumEstudiantesEsCero.release();
+    }
+
+
+    private static void contadorEstudiantesEsMayorAlMaximo() {
+        try {
+            desbloquearDirector(1);
+            mutexNumEstudiantesEsMayorAMax.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void contadorEstudiantesEsMenorAlMaximo() {
+        mutexNumEstudiantesEsMayorAMax.release();
+        if (Director.estadoDirector != EstadoDirector.ESPERANDO) {
+            bloquearDirector();
+        }
     }
 
     private static void bloquearDirector() {
         try {
+            if (Director.estadoDirector != EstadoDirector.FUERA) {
+                System.out.println("El Director està esperant per entrar. No molesta als que estudien");
+            }
+            Director.estadoDirector = EstadoDirector.ESPERANDO;
             semaforoDirector.acquire();
         } catch (InterruptedException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
-    private static void desbloquearDirector() {
+    private static void desbloquearDirector(int estado) {
+        switch (estado) {
+            case 0:
+                System.out.println("\tEl Director veu que no hi ha ningú a la sala d'estudis");
+                Director.estadoDirector = EstadoDirector.FUERA;
+                break;
+            case 1:
+                System.out.println("\tEl Director està dins la sala d'estudi: S'HA ACABAT LA FESTA!");
+                Director.estadoDirector = EstadoDirector.DENTRO;
+                break;
+        }
         semaforoDirector.release();
     }
 
-    private static void bloquearSalaDeEstudio() {
-        try {
-            semaforoEstudiantes.acquire();
-        } catch (InterruptedException e) {
-            System.out.println(e);
-        }
-    }
-
-    private static void desbloquearSalaDeEstudio() {
-        semaforoEstudiantes.release();
-    }
-
     private enum EstadoDirector {
+        DENTRO,
         FUERA,
-        ESPERANDO,
-        DENTRO
+        ESPERANDO
     }
 
     private static class Estudiante implements Runnable {
@@ -128,83 +162,49 @@ public class Main {
         @Override
         public void run() {
             esperarTiempoAleatorio();
-            entrarSalaDeEstudio();
-            if (contadorEstudiantes >= numMaxEstudiantesEnSalaEstudio) {
-                System.out.println(id + ": FESTA!!!!!");
-                desbloquearDirector();
-            } else {
-                System.out.println(id + " estudia");
-            }
-            desbloquearMutex();
-
-            esperarTiempoAleatorio();
-            salirSalaDeEstudio();
-        }
-
-        private void salirSalaDeEstudio() {
-            bloquearMutex();
-            contadorEstudiantes--;
-            System.out.println(this.id + " surt de la sala d'estudi, nombre estudiants: " + contadorEstudiantes);
-            if (contadorEstudiantes == 0) {
-                System.out.println(this.id + ": ADEU Senyor Director es queda sol");
-                desbloquearDirector();
-            }
-            desbloquearMutex();
-        }
-
-        private void entrarSalaDeEstudio() {
             while (Director.estadoDirector == EstadoDirector.DENTRO) {
                 // Esperar
             }
-            bloquearMutex();
+            bloquearContadorEstudiantes();
             contadorEstudiantes++;
             System.out.println(this.id + " entra a la sala d'estudi, nombre estudiants: " + contadorEstudiantes);
+            if (contadorEstudiantes >= numMaxEstudiantesEnSalaEstudio) {
+                System.out.println(id + ": FESTA!!!!!");
+                contadorEstudiantesNoEsCero();
+                desbloquearContadorEstudiantes();
+                contadorEstudiantesEsMayorAlMaximo();
+            } else {
+                System.out.println(this.id + " estudia");
+                contadorEstudiantesNoEsCero();
+                desbloquearContadorEstudiantes();
+                contadorEstudiantesEsMenorAlMaximo();
+            }
+            esperarTiempoAleatorio();
+            bloquearContadorEstudiantes();
+            contadorEstudiantes--;
+            System.out.println(this.id + " surt de la sala d'estudi, nombre estudiants: " + contadorEstudiantes);
+            if (contadorEstudiantes == 0) {
+                contadorEstudiantesEsCero();
+                System.out.println(this.id + ": ADEU Senyor Director es queda sol");
+            }
+            desbloquearContadorEstudiantes();
         }
+
     }
 
     private static class Director implements Runnable {
-
-        public static EstadoDirector estadoDirector;
+        static EstadoDirector estadoDirector;
         private final int MAX_RONDAS = 3;
-        private boolean esMutexDesbloqueado = false;
 
         @Override
         public void run() {
             for (int ronda = 1; ronda <= MAX_RONDAS; ronda++) {
-                this.esMutexDesbloqueado = false;
-                estadoDirector = EstadoDirector.FUERA;
                 // Se espera un tiempo aleatorio para empezar una ronda
                 esperarTiempoAleatorio();
                 System.out.println("El Sr. Director comença la ronda");
-                // Se bloquea el contador de numero de estudiantes
-                bloquearMutex();
-                if (contadorEstudiantes == 0) {
-                    System.out.println("\tEl Director veu que no hi ha ningú a la sala d'estudis");
-                    esperarTiempoAleatorio();
-                    System.out.println("\tEl Director acaba la ronda " + ronda + " de " + MAX_RONDAS);
-                    desbloquearMutex();
-                    continue;
-                }
-
-                if (contadorEstudiantes < numMaxEstudiantesEnSalaEstudio) {
-                    System.out.println("El Director està esperant per entrar. No molesta als que estudien");
-                    estadoDirector = EstadoDirector.ESPERANDO;
-                    desbloquearMutex();
-                    this.esMutexDesbloqueado = true;
-                    bloquearDirector();
-                }
-
-                if (this.esMutexDesbloqueado) {
-                    bloquearMutex();
-                }
-
-                if (contadorEstudiantes >= numMaxEstudiantesEnSalaEstudio) {
-                    System.out.println("\tEl Director està dins la sala d'estudi: S'HA ACABAT LA FESTA!");
-                    estadoDirector = EstadoDirector.DENTRO;
-                    bloquearDirector();
-                    desbloquearMutex();
-                }
-
+                estadoDirector = EstadoDirector.FUERA;
+                contadorEstudiantesNoEsCero();
+                bloquearDirector();
                 System.out.println("\tEl Director acaba la ronda " + ronda + " de " + MAX_RONDAS);
             }
         }
