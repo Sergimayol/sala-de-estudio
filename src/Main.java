@@ -8,8 +8,10 @@ public class Main {
     static int numEstudiantes = 0;
     static int numMaxEstudiantesEnSalaEstudio = 0;
     static Semaphore mutexContador = new Semaphore(1);
-    static Semaphore rondaDirector = new Semaphore(1);
-    static Semaphore entradaSalaEstudio;
+    //static Semaphore directorDentro = new Semaphore(0);
+    //static Semaphore numEstudiantesEsMayorAMax = new Semaphore(0);
+    static Semaphore directorEsperando = new Semaphore(0);
+    static Semaphore entradaSalaAbierta = new Semaphore(1);
 
     static EstadoDirector estadoDirector = EstadoDirector.FUERA;
 
@@ -56,7 +58,6 @@ public class Main {
         numEstudiantes = sc.nextInt();
         System.out.print("\nNúmero máximo de estudiantes: ");
         numMaxEstudiantesEnSalaEstudio = sc.nextInt();
-        entradaSalaEstudio = new Semaphore(numEstudiantes);
         System.out.print("\n");
 
         sc.close();
