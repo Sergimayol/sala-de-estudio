@@ -1,6 +1,6 @@
 # Práctica 1 - Programación concurrente
 
-## Restaurante solitarios
+## Sala de estudio
 
 Práctica 1 de la asignatura de programación concurrente.
 
