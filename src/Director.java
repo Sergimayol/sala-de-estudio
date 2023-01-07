@@ -20,10 +20,10 @@ public class Director implements Runnable {
                         Main.mutexContador.release();
                         Main.directorEsperando.acquire();
                     } else {
+                        Main.entradaSalaAbierta.acquire();
                         Main.estadoDirector = Main.EstadoDirector.DENTRO;
                         System.out.println("\tEl Director està dins la sala d'estudi: S'HA ACABAT LA FESTA!");
                         Main.mutexContador.release();
-                        Main.entradaSalaAbierta.acquire();
                         Main.directorEsperando.acquire();
                     }
                 }

@@ -8,8 +8,6 @@ public class Main {
     static int numEstudiantes = 0;
     static int numMaxEstudiantesEnSalaEstudio = 0;
     static Semaphore mutexContador = new Semaphore(1);
-    //static Semaphore directorDentro = new Semaphore(0);
-    //static Semaphore numEstudiantesEsMayorAMax = new Semaphore(0);
     static Semaphore directorEsperando = new Semaphore(0);
     static Semaphore entradaSalaAbierta = new Semaphore(1);
 
